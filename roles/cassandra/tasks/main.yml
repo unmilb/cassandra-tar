@@ -1,5 +1,3 @@
 ---
 
-#- include: dependencies.yml
 - include: repository.yml
-#- include: cassandra.yml

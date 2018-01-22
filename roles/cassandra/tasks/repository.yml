@@ -28,7 +28,5 @@
 - template:
     src: /etc/ansible/roles/cassandra/templates/cassandra.yaml.j2
     dest: /etc/cassandra/cassandra.yaml
-#    notify:
-#       - restart cassandra
 
 - include: /etc/ansible/roles/cassandra/handlers/main.yml
