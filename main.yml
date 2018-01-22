@@ -1,0 +1,6 @@
+--- 
+- name: cassandra
+  become: yes
+  hosts: ubuntu
+  roles:
+    - cassandra  

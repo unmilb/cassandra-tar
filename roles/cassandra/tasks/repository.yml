@@ -1,0 +1,34 @@
+---
+# Needed for add-apt-repository
+- name: Install python-software-properties
+  apt: pkg=python-software-properties state=installed update-cache=yes
+  tags:
+    - apt
+
+- apt_repository:
+    repo: deb http://www.apache.org/dist/cassandra/debian 310x main
+    state: present
+    filename: 'cassandra'
+
+- name: Add an apt key from cassandra
+  apt_key:
+    url: https://www.apache.org/dist/cassandra/KEYS
+    state: present
+
+- name: Add an apt key by id from a keyserver
+  apt_key:
+    keyserver: pool.sks-keyservers.net
+    id: A278B781FE4B2BDA
+
+- name: Update repositories cache and install "cassandra" package
+  apt:
+    name: cassandra
+    update_cache: yes
+
+- template:
+    src: /etc/ansible/roles/cassandra/templates/cassandra.yaml.j2
+    dest: /etc/cassandra/cassandra.yaml
+#    notify:
+#       - restart cassandra
+
+- include: /etc/ansible/roles/cassandra/handlers/main.yml
