@@ -16,7 +16,7 @@ Once all the configurations are completed it will restart the cassandra and clus
 1. Add the ip in hosts.yml for the number of nodes on which to install cassandra
 2. In roles/cassandra/vars/main.yml 
 	Add the seeds ip, these seeds will be added in cassandra's installation file ie: /etc/cassandra/cassandra.yaml
-		..*	seeds_var : 172.31.22.239
-		..*	seeds_var2 : 127.0.0.1
-..*	NOTE: To add more seeds increase the variable on this path for eg. seeds_var seeds_var2 seeds_var3 ... seeds_varN and also add these variables in roles/cassandra/templates/cassandra.yaml.j2 file at line No 424 {{ seeds_var }},{{ seeds_var2 }}{{ seeds_var3 }},{{ seeds_varN }}
+		..* seeds_var : 172.31.22.239
+		..* seeds_var2 : 127.0.0.1
+	..* NOTE: To add more seeds increase the variable on this path for eg. seeds_var seeds_var2 seeds_var3 ... seeds_varN and also add these variables in roles/cassandra/templates/cassandra.yaml.j2 file at line No 424 {{ seeds_var }},{{ seeds_var2 }}{{ seeds_var3 }},{{ seeds_varN }}
 3. At last simply run the play book on desired node.
