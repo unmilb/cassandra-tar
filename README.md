@@ -1,17 +1,17 @@
-# H1 Ansible Playbook for installing cassandra cluster
+# Ansible Playbook for installing cassandra cluster
 
-## H2 PLaybook requirements
+## PLaybook requirements
 - Java jre 8
 
-## H2 Additional Components 
+## Additional Components 
 - Creating Snapshots
 
-# H2 Information
+#  Information
 The Playbook will install cassandra on specified hosts from hsots.yml.
 After the completing the installation it will add the configuration from j2 template.
 Once all the configurations are completed it will restart the cassandra and cluster will be up and running.
 
-# H2 Steps to run the playbook:
+#  Steps to run the playbook:
 
 1. Add the ip in hosts.yml for the number of nodes on which to install cassandra
 2. In roles/cassandra/vars/main.yml 
