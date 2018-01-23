@@ -3,5 +3,6 @@
   become: yes
   hosts: ubuntu
   roles:
-    - cassandra-backup
-
+    - java-8
+    - cassandra  
+    - cassandra-backup 
