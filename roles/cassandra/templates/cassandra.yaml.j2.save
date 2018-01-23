@@ -1,0 +1,393 @@
+# Cassandra storage config YAML
+
+# NOTE:
+#   See http://wiki.apache.org/cassandra/StorageConfiguration for
+#   full explanations of configuration directives
+# /NOTE
+
+# The name of the cluster. This is mainly used to prevent machines in
+# one logical cluster from joining another.
+cluster_name: 'Test Cluster'
+
+# This defines the number of tokens randomly assigned to this node on the ring
+# The more tokens, relative to other nodes, the larger the proportion of data
+# that this node will store. You probably want all nodes to have the same number
+# of tokens assuming they have equal hardware capability.
+#
+# If you leave this unspecified, Cassandra will use the default of 1 token for legacy compatibility,
+# and will use the initial_token as described below.
+#
+# Specifying initial_token will override this setting on the node's initial start,
+# on subsequent starts, this setting will apply even if initial token is set.
+#
+# If you already have a cluster with 1 token per node, and wish to migrate to 
+# multiple tokens per node, see http://wiki.apache.org/cassandra/Operations
+num_tokens: 256
+
+# Triggers automatic allocation of num_tokens tokens for this node. The allocation
+# algorithm attempts to choose tokens in a way that optimizes replicated load over
+# the nodes in the datacenter for the replication strategy used by the specified
+# keyspace.
+#
+# The load assigned to each node will be close to proportional to its number of
+# vnodes.
+#
+# Only supported with the Murmur3Partitioner.
+# allocate_tokens_for_keyspace: KEYSPACE
+
+# initial_token allows you to specify tokens manually.  While you can use it with
+# vnodes (num_tokens > 1, above) -- in which case you should provide a 
+# comma-separated list -- it's primarily used when adding nodes to legacy clusters 
+# that do not have vnodes enabled.
+# initial_token:
+
+# See http://wiki.apache.org/cassandra/HintedHandoff
+# May either be "true" or "false" to enable globally
+hinted_handoff_enabled: true
+
+# When hinted_handoff_enabled is true, a black list of data centers that will not
+# perform hinted handoff
+# hinted_handoff_disabled_datacenters:
+#    - DC1
+#    - DC2
+
+# this defines the maximum amount of time a dead host will have hints
+# generated.  After it has been dead this long, new hints for it will not be
+# created until it has been seen alive and gone down again.
+max_hint_window_in_ms: 10800000 # 3 hours
+
+# Maximum throttle in KBs per second, per delivery thread.  This will be
+# reduced proportionally to the number of nodes in the cluster.  (If there
+# are two nodes in the cluster, each delivery thread will use the maximum
+# rate; if there are three, each will throttle to half of the maximum,
+# since we expect two nodes to be delivering hints simultaneously.)
+hinted_handoff_throttle_in_kb: 1024
+
+# Number of threads with which to deliver hints;
+# Consider increasing this number when you have multi-dc deployments, since
+# cross-dc handoff tends to be slower
+max_hints_delivery_threads: 2
+
+# Directory where Cassandra should store hints.
+# If not set, the default directory is $CASSANDRA_HOME/data/hints.
+# hints_directory: /var/lib/cassandra/hints
+
+# How often hints should be flushed from the internal buffers to disk.
+# Will *not* trigger fsync.
+hints_flush_period_in_ms: 10000
+
+# Maximum size for a single hints file, in megabytes.
+max_hints_file_size_in_mb: 128
+
+# Compression to apply to the hint files. If omitted, hints files
+# will be written uncompressed. LZ4, Snappy, and Deflate compressors
+# are supported.
+#hints_compression:
+#   - class_name: LZ4Compressor
+#     parameters:
+#         -
+
+# Maximum throttle in KBs per second, total. This will be
+# reduced proportionally to the number of nodes in the cluster.
+batchlog_replay_throttle_in_kb: 1024
+
+# Authentication backend, implementing IAuthenticator; used to identify users
+# Out of the box, Cassandra provides org.apache.cassandra.auth.{AllowAllAuthenticator,
+# PasswordAuthenticator}.
+#
+# - AllowAllAuthenticator performs no checks - set it to disable authentication.
+# - PasswordAuthenticator relies on username/password pairs to authenticate
+#   users. It keeps usernames and hashed passwords in system_auth.roles table.
+#   Please increase system_auth keyspace replication factor if you use this authenticator.
+#   If using PasswordAuthenticator, CassandraRoleManager must also be used (see below)
+authenticator: AllowAllAuthenticator
+
+# Authorization backend, implementing IAuthorizer; used to limit access/provide permissions
+# Out of the box, Cassandra provides org.apache.cassandra.auth.{AllowAllAuthorizer,
+# CassandraAuthorizer}.
+#
+# - AllowAllAuthorizer allows any action to any user - set it to disable authorization.
+# - CassandraAuthorizer stores permissions in system_auth.role_permissions table. Please
+#   increase system_auth keyspace replication factor if you use this authorizer.
+authorizer: AllowAllAuthorizer
+
+# Part of the Authentication & Authorization backend, implementing IRoleManager; used
+# to maintain grants and memberships between roles.
+# Out of the box, Cassandra provides org.apache.cassandra.auth.CassandraRoleManager,
+# which stores role information in the system_auth keyspace. Most functions of the
+# IRoleManager require an authenticated login, so unless the configured IAuthenticator
+# actually implements authentication, most of this functionality will be unavailable.
+#
+# - CassandraRoleManager stores role data in the system_auth keyspace. Please
+#   increase system_auth keyspace replication factor if you use this role manager.
+role_manager: CassandraRoleManager
+
+# Validity period for roles cache (fetching granted roles can be an expensive
+# operation depending on the role manager, CassandraRoleManager is one example)
+# Granted roles are cached for authenticated sessions in AuthenticatedUser and
+# after the period specified here, become eligible for (async) reload.
+# Defaults to 2000, set to 0 to disable caching entirely.
+# Will be disabled automatically for AllowAllAuthenticator.
+roles_validity_in_ms: 2000
+
+# Refresh interval for roles cache (if enabled).
+# After this interval, cache entries become eligible for refresh. Upon next
+# access, an async reload is scheduled and the old value returned until it
+# completes. If roles_validity_in_ms is non-zero, then this must be
+# also.
+# Defaults to the same value as roles_validity_in_ms.
+# roles_update_interval_in_ms: 2000
+
+# Validity period for permissions cache (fetching permissions can be an
+# expensive operation depending on the authorizer, CassandraAuthorizer is
+# one example). Defaults to 2000, set to 0 to disable.
+# Will be disabled automatically for AllowAllAuthorizer.
+permissions_validity_in_ms: 2000
+
+# Refresh interval for permissions cache (if enabled).
+# After this interval, cache entries become eligible for refresh. Upon next
+# access, an async reload is scheduled and the old value returned until it
+# completes. If permissions_validity_in_ms is non-zero, then this must be
+# also.
+# Defaults to the same value as permissions_validity_in_ms.
+# permissions_update_interval_in_ms: 2000
+
+# Validity period for credentials cache. This cache is tightly coupled to
+# the provided PasswordAuthenticator implementation of IAuthenticator. If
+# another IAuthenticator implementation is configured, this cache will not
+# be automatically used and so the following settings will have no effect.
+# Please note, credentials are cached in their encrypted form, so while
+# activating this cache may reduce the number of queries made to the
+# underlying table, it may not  bring a significant reduction in the
+# latency of individual authentication attempts.
+# Defaults to 2000, set to 0 to disable credentials caching.
+credentials_validity_in_ms: 2000
+
+# Refresh interval for credentials cache (if enabled).
+# After this interval, cache entries become eligible for refresh. Upon next
+# access, an async reload is scheduled and the old value returned until it
+# completes. If credentials_validity_in_ms is non-zero, then this must be
+# also.
+# Defaults to the same value as credentials_validity_in_ms.
+# credentials_update_interval_in_ms: 2000
+
+# The partitioner is responsible for distributing groups of rows (by
+# partition key) across nodes in the cluster.  You should leave this
+# alone for new clusters.  The partitioner can NOT be changed without
+# reloading all data, so when upgrading you should set this to the
+# same partitioner you were already using.
+#
+# Besides Murmur3Partitioner, partitioners included for backwards
+# compatibility include RandomPartitioner, ByteOrderedPartitioner, and
+# OrderPreservingPartitioner.
+#
+partitioner: org.apache.cassandra.dht.Murmur3Partitioner
+
+# Directories where Cassandra should store data on disk.  Cassandra
+# will spread data evenly across them, subject to the granularity of
+# the configured compaction strategy.
+# If not set, the default directory is $CASSANDRA_HOME/data/data.
+data_file_directories:
+    - /var/lib/cassandra/data
+
+# commit log.  when running on magnetic HDD, this should be a
+# separate spindle than the data directories.
+# If not set, the default directory is $CASSANDRA_HOME/data/commitlog.
+commitlog_directory: /var/lib/cassandra/commitlog
+
+# Enable / disable CDC functionality on a per-node basis. This modifies the logic used
+# for write path allocation rejection (standard: never reject. cdc: reject Mutation
+# containing a CDC-enabled table if at space limit in cdc_raw_directory).
+cdc_enabled: false
+
+# CommitLogSegments are moved to this directory on flush if cdc_enabled: true and the
+# segment contains mutations for a CDC-enabled table. This should be placed on a
+# separate spindle than the data directories. If not set, the default directory is
+# $CASSANDRA_HOME/data/cdc_raw.
+# cdc_raw_directory: /var/lib/cassandra/cdc_raw
+
+# Policy for data disk failures:
+#
+# die
+#   shut down gossip and client transports and kill the JVM for any fs errors or
+#   single-sstable errors, so the node can be replaced.
+#
+# stop_paranoid
+#   shut down gossip and client transports even for single-sstable errors,
+#   kill the JVM for errors during startup.
+#
+# stop
+#   shut down gossip and client transports, leaving the node effectively dead, but
+#   can still be inspected via JMX, kill the JVM for errors during startup.
+#
+# best_effort
+#    stop using the failed disk and respond to requests based on
+#    remaining available sstables.  This means you WILL see obsolete
+#    data at CL.ONE!
+#
+# ignore
+#    ignore fatal errors and let requests fail, as in pre-1.2 Cassandra
+disk_failure_policy: stop
+
+# Policy for commit disk failures:
+#
+# die
+#   shut down gossip and Thrift and kill the JVM, so the node can be replaced.
+#
+# stop
+#   shut down gossip and Thrift, leaving the node effectively dead, but
+#   can still be inspected via JMX.
+#
+# stop_commit
+#   shutdown the commit log, letting writes collect but
+#   continuing to service reads, as in pre-2.0.5 Cassandra
+#
+# ignore
+#   ignore fatal errors and let the batches fail
+commit_failure_policy: stop
+
+# Maximum size of the native protocol prepared statement cache
+#
+# Valid values are either "auto" (omitting the value) or a value greater 0.
+#
+# Note that specifying a too large value will result in long running GCs and possbily
+# out-of-memory errors. Keep the value at a small fraction of the heap.
+#
+# If you constantly see "prepared statements discarded in the last minute because
+# cache limit reached" messages, the first step is to investigate the root cause
+# of these messages and check whether prepared statements are used correctly -
+# i.e. use bind markers for variable parts.
+#
+# Do only change the default value, if you really have more prepared statements than
+# fit in the cache. In most cases it is not neccessary to change this value.
+# Constantly re-preparing statements is a performance penalty.
+#
+# Default value ("auto") is 1/256th of the heap or 10MB, whichever is greater
+prepared_statements_cache_size_mb:
+
+# Maximum size of the Thrift prepared statement cache
+#
+# If you do not use Thrift at all, it is safe to leave this value at "auto".
+#
+# See description of 'prepared_statements_cache_size_mb' above for more information.
+#
+# Default value ("auto") is 1/256th of the heap or 10MB, whichever is greater
+thrift_prepared_statements_cache_size_mb:
+
+# Maximum size of the key cache in memory.
+#
+# Each key cache hit saves 1 seek and each row cache hit saves 2 seeks at the
+# minimum, sometimes more. The key cache is fairly tiny for the amount of
+# time it saves, so it's worthwhile to use it at large numbers.
+# The row cache saves even more time, but must contain the entire row,
+# so it is extremely space-intensive. It's best to only use the
+# row cache if you have hot rows or static rows.
+#
+# NOTE: if you reduce the size, you may not get you hottest keys loaded on startup.
+#
+# Default value is empty to make it "auto" (min(5% of Heap (in MB), 100MB)). Set to 0 to disable key cache.
+key_cache_size_in_mb:
+
+# Duration in seconds after which Cassandra should
+# save the key cache. Caches are saved to saved_caches_directory as
+# specified in this configuration file.
+#
+# Saved caches greatly improve cold-start speeds, and is relatively cheap in
+# terms of I/O for the key cache. Row cache saving is much more expensive and
+# has limited use.
+#
+# Default is 14400 or 4 hours.
+key_cache_save_period: 14400
+
+# Number of keys from the key cache to save
+# Disabled by default, meaning all keys are going to be saved
+# key_cache_keys_to_save: 100
+
+# Row cache implementation class name. Available implementations:
+#
+# org.apache.cassandra.cache.OHCProvider
+#   Fully off-heap row cache implementation (default).
+#
+# org.apache.cassandra.cache.SerializingCacheProvider
+#   This is the row cache implementation availabile
+#   in previous releases of Cassandra.
+# row_cache_class_name: org.apache.cassandra.cache.OHCProvider
+
+# Maximum size of the row cache in memory.
+# Please note that OHC cache implementation requires some additional off-heap memory to manage
+# the map structures and some in-flight memory during operations before/after cache entries can be
+# accounted against the cache capacity. This overhead is usually small compared to the whole capacity.
+# Do not specify more memory that the system can afford in the worst usual situation and leave some
+# headroom for OS block level cache. Do never allow your system to swap.
+#
+# Default value is 0, to disable row caching.
+row_cache_size_in_mb: 0
+
+# Duration in seconds after which Cassandra should save the row cache.
+# Caches are saved to saved_caches_directory as specified in this configuration file.
+#
+# Saved caches greatly improve cold-start speeds, and is relatively cheap in
+# terms of I/O for the key cache. Row cache saving is much more expensive and
+# has limited use.
+#
+# Default is 0 to disable saving the row cache.
+row_cache_save_period: 0
+
+# Number of keys from the row cache to save.
+# Specify 0 (which is the default), meaning all keys are going to be saved
+# row_cache_keys_to_save: 100
+
+# Maximum size of the counter cache in memory.
+#
+# Counter cache helps to reduce counter locks' contention for hot counter cells.
+# In case of RF = 1 a counter cache hit will cause Cassandra to skip the read before
+# write entirely. With RF > 1 a counter cache hit will still help to reduce the duration
+# of the lock hold, helping with hot counter cell updates, but will not allow skipping
+# the read entirely. Only the local (clock, count) tuple of a counter cell is kept
+# in memory, not the whole counter, so it's relatively cheap.
+#
+# NOTE: if you reduce the size, you may not get you hottest keys loaded on startup.
+#
+# Default value is empty to make it "auto" (min(2.5% of Heap (in MB), 50MB)). Set to 0 to disable counter cache.
+# NOTE: if you perform counter deletes and rely on low gcgs, you should disable the counter cache.
+counter_cache_size_in_mb:
+
+# Duration in seconds after which Cassandra should
+# save the counter cache (keys only). Caches are saved to saved_caches_directory as
+# specified in this configuration file.
+#
+# Default is 7200 or 2 hours.
+counter_cache_save_period: 7200
+
+# Number of keys from the counter cache to save
+# Disabled by default, meaning all keys are going to be saved
+# counter_cache_keys_to_save: 100
+
+# saved caches
+# If not set, the default directory is $CASSANDRA_HOME/data/saved_caches.
+saved_caches_directory: /var/lib/cassandra/saved_caches
+
+# commitlog_sync may be either "periodic" or "batch." 
+# 
+# When in batch mode, Cassandra won't ack writes until the commit log
+# has been fsynced to disk.  It will wait
+# commitlog_sync_batch_window_in_ms milliseconds between fsyncs.
+# This window should be kept short because the writer threads will
+# be unable to do extra work while waiting.  (You may need to increase
+# concurrent_writes for the same reason.)
+#
+# commitlog_sync: batch
+# commitlog_sync_batch_window_in_ms: 2
+#
+# the other option is "periodic" where writes may be acked immediately
+# and the CommitLog is simply synced every commitlog_sync_period_in_ms
+# milliseconds. 
+commitlog_sync: periodic
+commitlog_sync_period_in_ms: 10000
+
+# The size of the individual commitlog file segments.  A commitlog
+# segment may be archived, deleted, or recycled once all the data
+# in it (potentially from each columnfamily in the system) has been
+# flushed to sstables.
+#
+# The default size is 32, which is almost always fine, but if you are
