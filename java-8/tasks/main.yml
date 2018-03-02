@@ -1,0 +1,9 @@
+---
+- name: Install add-apt-repostory
+  become: yes
+  apt: name=software-properties-common state=latest
+
+- name: Ensure java is installed .
+  apt: name=openjdk-8-jre-headless state=present
+  become: true
+

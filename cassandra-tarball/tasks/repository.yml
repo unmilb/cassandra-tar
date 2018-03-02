@@ -1,0 +1,35 @@
+---
+# Needed for add-apt-repository
+- name: Install python-software-properties
+  apt: pkg=python-software-properties state=installed update-cache=yes
+  when: ansible_distribution == "Debian"
+  tags:
+    - apt
+
+- name: Download package and extract package
+  become: yes
+  unarchive: 
+    src: http://archive.apache.org/dist/cassandra/{{ version }}/apache-cassandra-{{ version }}-bin.tar.gz
+    dest: /opt/
+    remote_src: yes  
+
+- name: stat /opt/cassandra
+  stat: path=/opt/apache-cassandra-{{ version }}
+  register: cassandra_stat
+
+- name: Move apache-cassandra to cassandra
+  become: yes
+  command: mv /opt/apache-cassandra-{{ version }} /opt/cassandra
+  when: cassandra_stat.stat.exists
+
+- name: Make cassandra available from everywhere
+  become: yes
+  shell: cp -s /opt/cassandra/bin/* /usr/bin/
+
+- template:
+    src: /etc/ansible/roles/cassandra/templates/cassandra.yaml.j2
+    dest: /opt/cassandra/conf/cassandra.yaml
+
+- name: Start Cassandra
+  become: yes
+  command: /usr/bin/cassandra -R
