@@ -1,6 +1,0 @@
-[redmine]
-150.150.150.232
-
-[ubuntu]
-34.210.25.78 ansible_user=ubuntu 
-
