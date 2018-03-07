@@ -1,5 +1,0 @@
----
-seeds_var : 172.31.22.239
-seeds_var2 : 127.0.0.1
-increemental_backup : true
-endpoint_snitch : GossipingPropertyFileSnitch

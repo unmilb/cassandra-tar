@@ -1,8 +1,0 @@
----
-- template:
-    src: /etc/ansible/roles/cassandra-backup/template/cassandra-backup.sh.j2
-    dest: /root/cassandra-backup.sh
-    mode: 700
-
-- name: Backup using scripts saved at /var/lib/cassandra/backup
-  command: sh /root/cassandra-backup.sh
